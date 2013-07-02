@@ -64,17 +64,36 @@ ffi.cdef[[
 ]]
 
 local hiredis = ffi.load("hiredis")
+local C = ffi.C
 
-local _redis = nil
+local print = print
+local setmetatable = setmetatable
 
 local NULL = ffi.cast("void*", 0)
 
-local C = ffi.C
+RedisFFI = {
+	m_s_host = "",
+	m_n_port = 0,
+	m_t_redis = nil,
+}
 
-function CONNECT(in_s_host, in_n_port)
-	_redis = hiredis.redisConnect("192.168.100.154", 6380)
+function RedisFFI:new(o)
+	o = o or {}
+
+	setmetatable(o, self)
+
+	self.__index = self
+
+	return o
+end
+
+function RedisFFI:CONNECT(in_s_host, in_n_port)
+	self.m_s_host = in_s_host
+	self.m_n_port = in_n_port
+
+	m_t_redis = hiredis.redisConnect("192.168.100.154", 6380)
 	
-	if not _redis then
+	if not m_t_redis then
 		print("redis is not online.")
 		return false
 	else
@@ -83,8 +102,13 @@ function CONNECT(in_s_host, in_n_port)
 	end
 end
 
-function SET(in_s_key, in_s_value)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "SET %s %s", in_s_key, in_s_value))
+function RedisFFI:PRINT_CONFIG( ... )
+	print("HOST: "..self.m_s_host)
+	print("PORT: "..self.m_n_port)
+end
+
+function RedisFFI:SET(in_s_key, in_s_value)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "SET %s %s", in_s_key, in_s_value))
 	
 	if reply.type == 1 then
 		return reply.integer
@@ -93,8 +117,8 @@ function SET(in_s_key, in_s_value)
 	end
 end
 
-function GET(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "GET %s", in_s_key))
+function RedisFFI:GET(in_s_key)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "GET %s", in_s_key))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -105,8 +129,8 @@ function GET(in_s_key)
 	return nil
 end
 
-function LPOP(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "LPOP %s", in_s_key))
+function RedisFFI:LPOP(in_s_key)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "LPOP %s", in_s_key))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -117,8 +141,8 @@ function LPOP(in_s_key)
 	return nil
 end
 
-function RPUSH(in_s_key, in_s_value)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "RPUSH %s %s", in_s_key, in_s_value))
+function RedisFFI:RPUSH(in_s_key, in_s_value)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "RPUSH %s %s", in_s_key, in_s_value))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -129,8 +153,8 @@ function RPUSH(in_s_key, in_s_value)
 	return nil
 end
 
-function EXPIRE(in_s_key, in_s_sec)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
+function RedisFFI:EXPIRE(in_s_key, in_s_sec)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
 
 	if not reply then
 		return reply.integer
@@ -139,8 +163,8 @@ function EXPIRE(in_s_key, in_s_sec)
 	return 0
 end
 
-function DEL(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(_redis, "DEL %s", in_s_key))
+function RedisFFI:DEL(in_s_key)
+	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "DEL %s", in_s_key))
 
 	if not reply then
 		return reply.integer
@@ -149,8 +173,8 @@ function DEL(in_s_key)
 	return 0
 end
 
-function IsAlived() 
-	local reply = ffi.cast("redisReply", hiredis.redisCommand(_redis, "PING")
+function RedisFFI:IsAlived() 
+	local reply = ffi.cast("redisReply", hiredis.redisCommand(m_t_redis, "PING"))
 
 	if not reply then
 		if reply.type == 1 then

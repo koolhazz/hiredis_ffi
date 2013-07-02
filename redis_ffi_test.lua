@@ -1,27 +1,44 @@
-local redis = require("redis_ffi")
+require("redis_ffi")
 
+local function redis_ffi_test_1()
+	local temp = redis_ffi.RedisFFI:new()
 
-
--- local redis_2 = require("redis_ffi")
-
--- if redis_2.CONNECT("192.168.100.167", 4502) then
--- 	redis_2.SET("guoguo", "guoguo")
-
--- 	print(redis_2.GET("guoguo"))
--- end
-
-local function loop_test()
-	if redis.CONNECT("192.168.100.154", 6380) then
+	if temp:CONNECT("192.168.100.154", 6380) then
 		for i = 1, 1 do
-			redis.SET("dengyong", "KIKI")
+			temp:SET("dengyong", "KIKI")
 			print("do")
-			-- redis.GET("dengyong")
+			temp:GET("dengyong")
 
-			redis.EXPIRE("dengyong", "100")
-			redis.EXPIRE("dengyong", tostring(1000))		
+			temp:EXPIRE("dengyong", "100")
+			temp:EXPIRE("dengyong", tostring(1000))		
 		end
-		--redis.RPUSH("jingyang", "1")
-	end
-end
 
-loop_test()
+		temp:PRINT_CONFIG()		
+	end
+end	
+
+local function redis_ffi_test_2()
+	local temp = redis_ffi.RedisFFI:new()
+
+	if temp:CONNECT("192.168.100.167", 4502) then
+		for i = 1, 1 do
+			temp:SET("dengyong", "KIKI")
+			print("do")
+			temp:GET("dengyong")
+
+			temp:EXPIRE("dengyong", "100")
+			temp:EXPIRE("dengyong", tostring(1000))		
+		end
+
+		temp:PRINT_CONFIG()			
+	end
+end	
+
+redis_ffi_test_1()
+redis_ffi_test_2()
+
+-- loop_test()
+-- loop_test_2()
+
+-- redis.PRINT_CONFIG()
+-- redis_2.PRINT_CONFIG()
