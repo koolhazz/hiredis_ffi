@@ -93,13 +93,14 @@ function RedisFFI:CONNECT(in_s_host, in_n_port)
 	self.m_s_host = in_s_host
 	self.m_n_port = in_n_port
 
-	m_t_redis = hiredis.redisConnect("192.168.100.154", 6380)
+	m_t_redis = hiredis.redisConnect(in_s_host, in_n_port)
 	
 	if not m_t_redis then
-		print("redis is not online.")
+		print("Connect Redis Server is Failed.")
+		print("err: "..ffi.string(m_t_redis.errstr, C.strlen(m_t_redis.errstr)))
 		return false
 	else
-		print("redis is online.")
+		print("Connect Redis Server is Success.")
 		return true
 	end
 end
