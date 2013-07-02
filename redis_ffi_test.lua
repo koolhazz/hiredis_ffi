@@ -1,13 +1,15 @@
 require("redis_ffi")
 
+local LOOP = 1
+
 local function redis_ffi_test_1()
-	local temp = redis_ffi.RedisFFI:new()
+	local temp = redis_ffi.RedisFFI:NEW()
 
 	if temp:CONNECT("192.168.100.154", 6380) then
-		for i = 1, 1 do
+		for i = 1, LOOP do
 			temp:SET("dengyong", "KIKI")
-			print("do")
-			temp:GET("dengyong")
+			
+			print(temp:GET("dengyong"))
 
 			temp:EXPIRE("dengyong", "100")
 			temp:EXPIRE("dengyong", tostring(1000))		
@@ -18,7 +20,7 @@ local function redis_ffi_test_1()
 end	
 
 local function redis_ffi_test_2()
-	local temp = redis_ffi.RedisFFI:new()
+	local temp = redis_ffi.RedisFFI:NEW()
 
 	if temp:CONNECT("192.168.100.167", 4502) then
 		for i = 1, 1 do

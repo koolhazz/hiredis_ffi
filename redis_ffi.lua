@@ -90,7 +90,7 @@ local function _redisFree(in_t_redis)
 	hiredis.redisFree(in_t_redis)
 end
 
-function RedisFFI:new(o)
+function RedisFFI:NEW(o)
 	o = o or {}
 
 	setmetatable(o, self)
