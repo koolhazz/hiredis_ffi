@@ -68,6 +68,8 @@ local C = ffi.C
 
 local print = print
 local setmetatable = setmetatable
+local Command = hiredis.redisCommand
+local Cast = ffi.cast
 
 local NULL = ffi.cast("void*", 0)
 
@@ -108,7 +110,7 @@ function RedisFFI:PRINT_CONFIG( ... )
 end
 
 function RedisFFI:SET(in_s_key, in_s_value)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "SET %s %s", in_s_key, in_s_value))
+	local reply = Cast("redisReply*", Command(m_t_redis, "SET %s %s", in_s_key, in_s_value))
 	
 	if reply.type == 1 then
 		return reply.integer
@@ -118,7 +120,7 @@ function RedisFFI:SET(in_s_key, in_s_value)
 end
 
 function RedisFFI:GET(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "GET %s", in_s_key))
+	local reply = Cast("redisReply*", Command(m_t_redis, "GET %s", in_s_key))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -130,7 +132,7 @@ function RedisFFI:GET(in_s_key)
 end
 
 function RedisFFI:LPOP(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "LPOP %s", in_s_key))
+	local reply = Cast("redisReply*", Command(m_t_redis, "LPOP %s", in_s_key))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -142,7 +144,7 @@ function RedisFFI:LPOP(in_s_key)
 end
 
 function RedisFFI:RPUSH(in_s_key, in_s_value)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "RPUSH %s %s", in_s_key, in_s_value))
+	local reply = Cast("redisReply*", Command(m_t_redis, "RPUSH %s %s", in_s_key, in_s_value))
 
 	if NULL ~= reply then
 		if reply.type == 1 then
@@ -154,7 +156,7 @@ function RedisFFI:RPUSH(in_s_key, in_s_value)
 end
 
 function RedisFFI:EXPIRE(in_s_key, in_s_sec)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
+	local reply = Cast("redisReply*", Command(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
 
 	if not reply then
 		return reply.integer
@@ -164,7 +166,7 @@ function RedisFFI:EXPIRE(in_s_key, in_s_sec)
 end
 
 function RedisFFI:DEL(in_s_key)
-	local reply = ffi.cast("redisReply*", hiredis.redisCommand(m_t_redis, "DEL %s", in_s_key))
+	local reply = Cast("redisReply*", Command(m_t_redis, "DEL %s", in_s_key))
 
 	if not reply then
 		return reply.integer
@@ -174,7 +176,7 @@ function RedisFFI:DEL(in_s_key)
 end
 
 function RedisFFI:IsAlived() 
-	local reply = ffi.cast("redisReply", hiredis.redisCommand(m_t_redis, "PING"))
+	local reply = Cast("redisReply*", Command(m_t_redis, "PING"))
 
 	if not reply then
 		if reply.type == 1 then
@@ -187,3 +189,14 @@ function RedisFFI:IsAlived()
 	return false 
 end
 	
+function RedisFFI:EXISTS(in_s_key)
+	local reply = Cast("redisReply*", Command(n_t_redis, "EXISTS %s", in_s_key))
+
+	if not reply then
+		if reply.type == 4 then
+			return reply.integer
+		end
+	end
+
+	return 0
+end
