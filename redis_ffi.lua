@@ -57,6 +57,9 @@ ffi.cdef[[
 	void *redisCommand(redisContext *c, const char *format, ...);
 	redisContext *redisConnect(const char *ip, int port);
 	redisContext *redisConnectWithTimeout(const char *ip, int port, struct timeval tv);
+	
+	void freeReplyObject(void *reply);
+	void redisFree(redisContext *c);
 
 	int printf(const char *format, ...);
 
@@ -79,6 +82,14 @@ RedisFFI = {
 	m_t_redis = nil,
 }
 
+local function _freeReplyObject(in_t_reply)
+	hiredis.freeReplyObject(in_t_reply)
+end
+
+local function _redisFree(in_t_redis)
+	hiredis.redisFree(in_t_redis)
+end
+
 function RedisFFI:new(o)
 	o = o or {}
 
@@ -98,6 +109,9 @@ function RedisFFI:CONNECT(in_s_host, in_n_port)
 	if not m_t_redis then
 		print("Connect Redis Server is Failed.")
 		print("err: "..ffi.string(m_t_redis.errstr, C.strlen(m_t_redis.errstr)))
+		
+		_redisFree(m_t_redis)
+
 		return false
 	else
 		print("Connect Redis Server is Success.")
@@ -112,92 +126,122 @@ end
 
 function RedisFFI:SET(in_s_key, in_s_value)
 	local reply = Cast("redisReply*", Command(m_t_redis, "SET %s %s", in_s_key, in_s_value))
-	
-	if reply.type == 1 then
-		return reply.integer
-	else
-		return reply.type
+	local _result = 0
+
+	if not reply then
+		if reply.type == 1 then
+			_result = reply.integer
+		end
 	end
+
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:GET(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "GET %s", in_s_key))
+	local _result = nil
 
 	if NULL ~= reply then
 		if reply.type == 1 then
-			return ffi.string(reply.str, C.strlen(reply.str))
+			_result = ffi.string(reply.str, C.strlen(reply.str))
 		end
 	end
 
-	return nil
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:LPOP(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "LPOP %s", in_s_key))
+	local _result = nil
 
 	if NULL ~= reply then
 		if reply.type == 1 then
-			return ffi.string(reply.str, C.strlen(reply.str))
+			_result = ffi.string(reply.str, C.strlen(reply.str))
 		end
 	end
 
-	return nil
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:RPUSH(in_s_key, in_s_value)
 	local reply = Cast("redisReply*", Command(m_t_redis, "RPUSH %s %s", in_s_key, in_s_value))
+	local _result = 0
 
 	if NULL ~= reply then
-		if reply.type == 1 then
-			return ffi.string(reply.str, C.strlen(reply.str))
+		if reply.type == 3 then
+			_result = reply.integer
 		end
 	end
 
-	return nil
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:EXPIRE(in_s_key, in_s_sec)
 	local reply = Cast("redisReply*", Command(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
+	local _result = 0
 
 	if not reply then
-		return reply.integer
+		if reply.type == 3 then
+			_result = reply.integer
+		end
 	end
 
-	return 0
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:DEL(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "DEL %s", in_s_key))
+	local _result = 0
 
 	if not reply then
-		return reply.integer
+		if reply.type == 3 then
+			_result = reply.integer
+		end
 	end
 
-	return 0
+	_freeReplyObject(reply)
+
+	return _result
 end
 
 function RedisFFI:IsAlived() 
 	local reply = Cast("redisReply*", Command(m_t_redis, "PING"))
+	local _result = false
 
 	if not reply then
 		if reply.type == 1 then
 			if reply.type == "PONG" then
-				return true
+				_result = true
 			end
 		end
 	end
 
-	return false 
+	_freeReplyObject(reply)
+
+	return _result  
 end
 	
 function RedisFFI:EXISTS(in_s_key)
 	local reply = Cast("redisReply*", Command(n_t_redis, "EXISTS %s", in_s_key))
+	local _result = 0
 
 	if not reply then
-		if reply.type == 4 then
-			return reply.integer
+		if reply.type == 3 then
+			_result = reply.integer
 		end
 	end
 
-	return 0
+	_freeReplyObject(reply)
+
+	return _result
 end
