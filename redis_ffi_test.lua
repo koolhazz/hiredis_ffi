@@ -15,7 +15,13 @@ local function redis_ffi_test_1()
 			temp:EXPIRE("dengyong", tostring(1000))		
 		end
 
-		temp:PRINT_CONFIG()		
+		temp:PRINT_CONFIG()
+
+		if temp:IsAlived() then
+			print("true")
+		else
+			print("false")
+		end		
 	end
 end	
 
@@ -38,6 +44,8 @@ end
 
 redis_ffi_test_1()
 redis_ffi_test_2()
+
+
 
 -- loop_test()
 -- loop_test_2()

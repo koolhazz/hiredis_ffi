@@ -128,7 +128,7 @@ function RedisFFI:SET(in_s_key, in_s_value)
 	local reply = Cast("redisReply*", Command(m_t_redis, "SET %s %s", in_s_key, in_s_value))
 	local _result = 0
 
-	if not reply then
+	if reply then
 		if reply.type == 1 then
 			_result = reply.integer
 		end
@@ -143,7 +143,7 @@ function RedisFFI:GET(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "GET %s", in_s_key))
 	local _result = nil
 
-	if NULL ~= reply then
+	if reply then
 		if reply.type == 1 then
 			_result = ffi.string(reply.str, C.strlen(reply.str))
 		end
@@ -158,7 +158,7 @@ function RedisFFI:LPOP(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "LPOP %s", in_s_key))
 	local _result = nil
 
-	if NULL ~= reply then
+	if reply then
 		if reply.type == 1 then
 			_result = ffi.string(reply.str, C.strlen(reply.str))
 		end
@@ -173,7 +173,7 @@ function RedisFFI:RPUSH(in_s_key, in_s_value)
 	local reply = Cast("redisReply*", Command(m_t_redis, "RPUSH %s %s", in_s_key, in_s_value))
 	local _result = 0
 
-	if NULL ~= reply then
+	if reply then
 		if reply.type == 3 then
 			_result = reply.integer
 		end
@@ -188,7 +188,7 @@ function RedisFFI:EXPIRE(in_s_key, in_s_sec)
 	local reply = Cast("redisReply*", Command(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
 	local _result = 0
 
-	if not reply then
+	if reply then
 		if reply.type == 3 then
 			_result = reply.integer
 		end
@@ -203,7 +203,7 @@ function RedisFFI:DEL(in_s_key)
 	local reply = Cast("redisReply*", Command(m_t_redis, "DEL %s", in_s_key))
 	local _result = 0
 
-	if not reply then
+	if reply then
 		if reply.type == 3 then
 			_result = reply.integer
 		end
@@ -218,9 +218,9 @@ function RedisFFI:IsAlived()
 	local reply = Cast("redisReply*", Command(m_t_redis, "PING"))
 	local _result = false
 
-	if not reply then
-		if reply.type == 1 then
-			if reply.type == "PONG" then
+	if reply then
+		if reply.type == 5 then
+			if ffi.string(reply.str, C.strlen(reply.str)) == "PONG" then
 				_result = true
 			end
 		end
@@ -232,10 +232,10 @@ function RedisFFI:IsAlived()
 end
 	
 function RedisFFI:EXISTS(in_s_key)
-	local reply = Cast("redisReply*", Command(n_t_redis, "EXISTS %s", in_s_key))
+	local reply = Cast("redisReply*", Command(m_t_redis, "EXISTS %s", in_s_key))
 	local _result = 0
 
-	if not reply then
+	if reply then
 		if reply.type == 3 then
 			_result = reply.integer
 		end
