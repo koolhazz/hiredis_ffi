@@ -12,7 +12,10 @@ local function redis_ffi_test_1()
 			print(temp:GET("dengyong"))
 
 			temp:EXPIRE("dengyong", "100")
-			temp:EXPIRE("dengyong", tostring(1000))		
+			-- temp:EXPIRE("dengyong", tostring(1000))		
+
+			temp:HSET("chenbo", "age", "100")
+			print(temp:HGET("chenbo", "age"))
 		end
 
 		temp:PRINT_CONFIG()
@@ -43,7 +46,7 @@ local function redis_ffi_test_2()
 end	
 
 redis_ffi_test_1()
-redis_ffi_test_2()
+-- redis_ffi_test_2()
 
 
 

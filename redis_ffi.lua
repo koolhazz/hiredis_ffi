@@ -90,6 +90,10 @@ local function _redisFree(in_t_redis)
 	hiredis.redisFree(in_t_redis)
 end
 
+local function _cast_string(in_t_str)
+	return ffi.string(in_t_str, C.strlen(in_t_str))
+end
+
 function RedisFFI:NEW(o)
 	o = o or {}
 
@@ -98,6 +102,12 @@ function RedisFFI:NEW(o)
 	self.__index = self
 
 	return o
+end
+
+function RedisFFI:FREE(o)
+	if m_t_redis then
+		_redisFree(m_t_redis)
+	end
 end
 
 function RedisFFI:CONNECT(in_s_host, in_n_port)
@@ -219,8 +229,9 @@ function RedisFFI:IsAlived()
 	local _result = false
 
 	if reply then
-		if reply.type == 5 then
-			if ffi.string(reply.str, C.strlen(reply.str)) == "PONG" then
+		if reply.type == 5 then // reids status
+			local str = _cast_string(reply.str, C.strlen(reply.str))
+			if str == "PONG" then
 				_result = true
 			end
 		end
@@ -244,4 +255,87 @@ function RedisFFI:EXISTS(in_s_key)
 	_freeReplyObject(reply)
 
 	return _result
+end
+
+function RedisFFI:HSET(in_s_name, in_s_key, in_s_value)
+	local _reply = Cast("redisReply*", Command(m_t_redis, "HSET %s %s %s", in_s_name, in_s_key, in_s_value))
+	local _result = 0
+
+	if _reply then
+		if _reply.type == 3 then
+			_result = _reply.integer		
+		end
+	end
+
+	_freeReplyObject(_reply)
+
+	return _result
+end
+
+function RedisFFI:HGET(in_s_name, in_s_key)
+	local _reply = Cast("redisReply*", Command(m_t_redis, "HGET %s %s", in_s_name, in_s_key))
+	local _result = nil
+
+	if _reply then
+		if _reply.type == 1 then
+			_result = ffi.string(_reply.str, C.strlen(_reply.str))	
+		end
+	end
+
+	_freeReplyObject(_reply)
+
+	return _result
+end
+
+function RedisFFI:HINCRBY(in_s_name, in_s_key, in_s_value)
+	local _reply = Cast("redisReply*", Command(m_t_redis, "HINCRBY %s %s %s", in_s_name, in_s_key, in_s_value))
+	local _result = 0
+
+	if not _reply then
+		if _reply.type == 3 then
+			_result = _reply.integer		
+		end
+	end
+
+	_freeReplyObject(_reply)
+
+	return _result
+end
+
+function RedisFFI:HGETALL(in_s_name)
+		
+end
+
+function RedisFFI:HDEL(in_s_name)
+	
+end
+
+function RedisFFI:PUBLISH(in_s_channel, in_s_message)
+	local _reply = Cast("redisReply*", Command(m_t_redis, "PUBLISH %s %s", in_s_channel, in_s_message))
+	local _result = 0
+
+	if not _reply then
+		if _reply.type == 3 then
+			_result = _reply.integer		
+		end
+	end
+
+	_freeReplyObject(_reply)
+
+	return _result	
+end
+
+function RedisFFI:SUBSCRIBE(in_s_channel)
+	local _reply = Cast("redisReply*", Command(m_t_redis, "SUBSCRIBE %s", in_s_channel))
+	local _result = nil
+
+	if not _reply then
+		if _reply.type == 1 then
+			_result = ffi.string(_reply.str, C.strlen(_reply.str))		
+		end
+	end
+
+	_freeReplyObject(_reply)
+
+	return _result	
 end
