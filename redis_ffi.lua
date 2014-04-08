@@ -229,7 +229,7 @@ function RedisFFI:IsAlived()
 	local _result = false
 
 	if reply then
-		if reply.type == 5 then // reids status
+		if reply.type == 5 then -- reids status
 			local str = _cast_string(reply.str, C.strlen(reply.str))
 			if str == "PONG" then
 				_result = true
