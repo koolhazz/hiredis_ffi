@@ -194,6 +194,21 @@ function RedisFFI:RPUSH(in_s_key, in_s_value)
 	return _result
 end
 
+function RedisFFI:LLEN(in_s_key)
+	local reple = Cast("redisReply*", Command(m_t_redis, "LLEN %s", in_s_key))
+	local _result = 0
+
+	if reply then
+		if reply.type == 3 then
+			_result = reply.integer
+		end
+	end
+
+	_freeReplyObject(reply)
+
+	return _result
+end
+
 function RedisFFI:EXPIRE(in_s_key, in_s_sec)
 	local reply = Cast("redisReply*", Command(m_t_redis, "EXPIRE %s %s", in_s_key, in_s_sec))
 	local _result = 0
