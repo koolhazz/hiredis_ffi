@@ -206,7 +206,7 @@ function RedisFFI:LLEN(in_s_key)
 
 	_freeReplyObject(reply)
 
-	return _result
+	return tonumber(_result)
 end
 
 function RedisFFI:EXPIRE(in_s_key, in_s_sec)
