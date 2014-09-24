@@ -354,3 +354,10 @@ function RedisFFI:SUBSCRIBE(in_s_channel)
 
 	return _result	
 end
+
+function RedisFFI:ERROR()
+	local _result = _cast_string(self.m_t_redis.errstr)
+
+	return _result
+end
+	
